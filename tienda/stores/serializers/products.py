@@ -25,8 +25,9 @@ class ProductModelSerializer(serializers.ModelSerializer):
         Meta class
         """
         model = Product
-        fields = (           
-            'codigo',
+        fields = ( 
+            'id',          
+            'code',
             'name',
             'description',
             'price',
@@ -45,36 +46,35 @@ class ProductModelSerializer(serializers.ModelSerializer):
 class AddProductSerializer(serializers.Serializer):
     
     
-    codigo = serializers.CharField(max_length=10)
-    #user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    code = serializers.CharField(max_length=10)    
     name = serializers.CharField(max_length=40)
     description = serializers.CharField(max_length=140)     
     price = serializers.IntegerField(default=0) 
     stock = serializers.IntegerField(default=0)
-    stock_limited = serializers.IntegerField(default=0)    
+    stock_limited = serializers.IntegerField(default=0)
+    id_category = serializers.IntegerField(default=0)    
 
-    def validate_codigo(self, data):       
-        """Verificamos si el producto existe"""
-        store = self.context['store']
-        product = Product.objects.filter(codigo=data, store=store, is_active=True)
+    def validate_code(self, data):      
+        """Verificamos si el producto existe"""        
+        product = Product.objects.filter(code=data,is_active=True)
         if product.exists():
             raise serializers.ValidationError('Producto ya existe.')
-        return data
-       
+        return data      
 
     
     def validate(self, data):
-        """Varificamis que el stock limited sea mayor que el stock inicial ."""       
-             
+        """Varificamis que el stock limited sea mayor que el stock inicial ."""
         if data['stock'] >= data['stock_limited']:
             raise serializers.ValidationError('El stock limited debe ser mayor que el stock inicial')        
         return data
 
     def create(self, data):
-        """Crear producto"""      
-        store = self.context['store']
-        category = self.context['category']     
-        
+        """Crear producto"""
+        category = Category.objects.get(pk=data['id_category'])
+        user = self.context['user']
+        store = Store.objects.get(user=user)        
+        #import pdb ; pdb.set_trace()        
+        data.pop('id_category')
         #Product creation 
         product = Product.objects.create(
             **data,            

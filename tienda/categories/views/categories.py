@@ -21,7 +21,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
 
      """Category view set."""     
      serializer_class = CategoryModelSerializer
-     lookup_field = 'name'     
+     
 
      
      def get_queryset(self):        

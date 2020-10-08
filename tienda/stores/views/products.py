@@ -14,7 +14,8 @@ from tienda.categories.models import Category
 from rest_framework.permissions import IsAuthenticated
 from tienda.stores.permissions import (
     IsOwner,    
-    IsClient
+    IsClient,
+    IsOwnerOrClient
 ) 
 
 #Serializers
@@ -64,7 +65,7 @@ class ProductViewSet(mixins.ListModelMixin,
         """Retorno detalle producto"""
         return get_object_or_404( 
             Product,
-            codigo = self.kwargs['pk'],
+            code = self.kwargs['pk'],
             store__name = self.kwargs['store_name'],
             category__name = self.kwargs['category_name'],
             is_active=True            
@@ -93,7 +94,8 @@ class ProductViewSet(mixins.ListModelMixin,
 
  
 
-class AllProductViewSet(mixins.ListModelMixin,                        
+class AllProductViewSet(mixins.ListModelMixin,
+                        mixins.CreateModelMixin,                        
                         mixins.RetrieveModelMixin,
                         mixins.UpdateModelMixin,                        
                         viewsets.GenericViewSet):
@@ -105,22 +107,51 @@ class AllProductViewSet(mixins.ListModelMixin,
         return super(AllProductViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_permissions(self):
-        permissions = [IsAuthenticated]        
-        if self.action in ['list', 'shopping']:
-            permissions.append(IsClient)        
+        permissions = [IsAuthenticated]
+        if self.action == 'list':
+            permissions.append(IsOwnerOrClient)
+        if self.action == 'create':
+            permissions.append(IsOwner)
+        if self.action == 'shopping':
+            permissions.append(IsClient)
+                       
         return [p() for p in permissions]    
                         
     def get_queryset(self):       
-        return Product.objects.filter(           
-            stock__gt = 0,
-            is_active=True
-        )
+        if self.action == 'list':            
+            if self.request.user.is_admin:
+                store = Store.objects.get(user=self.request.user)
+                #import pdb ; pdb.set_trace()                 
+                products = Product.objects.filter(           
+                    stock__gt = 0,
+                    is_active=True,
+                    store = store
+                )      
+            if self.request.user.is_client:
+                 products = Product.objects.filter(           
+                    stock__gt = 0,
+                    is_active=True                   
+                )
+            return products
+
     def get_object(self):         
         """Retorno detalle producto"""
         return get_object_or_404( 
             Product,
-            codigo = self.kwargs['pk']
+            code = self.kwargs['pk']
         )
+    
+    def create(self, request, *args, **kwargs):
+
+        serializer = AddProductSerializer(
+            data=request.data,
+            context={'user':request.user}            
+        )
+        serializer.is_valid(raise_exception=True)
+        product = serializer.save()       
+
+        data=self.get_serializer(product).data
+        return Response(data,status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'])
     def shopping(self, request, *args, **kwargs):

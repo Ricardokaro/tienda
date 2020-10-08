@@ -8,7 +8,7 @@ from tienda.utils.models import TiendaModel
 class Product(TiendaModel):
  
     
-    codigo = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     name = models.CharField(max_length=40)
     description = models.CharField(max_length=140)
     
