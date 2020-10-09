@@ -22,8 +22,8 @@ from tienda.stores.permissions import (
 from tienda.stores.serializers import (
     ProductModelSerializer, 
     AddProductSerializer,
-    PurchaseModelSerializer,
-    AddPurchaseSerializer
+    PurchaseModelSerializer,    
+    ProductClientModelSerializer    
 )
 
 class ProductViewSet(mixins.ListModelMixin,
@@ -75,8 +75,7 @@ class ProductViewSet(mixins.ListModelMixin,
         purchase = Purchase.objects.filter(product__codigo = instance.codigo)        
         if not purchase.exists():          
             instance.is_active = False
-            instance.save()   
-        
+            instance.save()       
          
   
 
@@ -92,8 +91,6 @@ class ProductViewSet(mixins.ListModelMixin,
         data=self.get_serializer(product).data
         return Response(data,status=status.HTTP_201_CREATED)
 
- 
-
 class AllProductViewSet(mixins.ListModelMixin,
                         mixins.CreateModelMixin,                        
                         mixins.RetrieveModelMixin,
@@ -101,7 +98,8 @@ class AllProductViewSet(mixins.ListModelMixin,
                         viewsets.GenericViewSet):
    
     
-    serializer_class = ProductModelSerializer
+    
+    #serializer_class = ProductModelSerializer
     
     def dispatch(self, request, *args, **kwargs):
         return super(AllProductViewSet, self).dispatch(request, *args, **kwargs)
@@ -115,7 +113,15 @@ class AllProductViewSet(mixins.ListModelMixin,
         if self.action == 'shopping':
             permissions.append(IsClient)
                        
-        return [p() for p in permissions]    
+        return [p() for p in permissions]
+
+    def get_serializer_class(self):
+        """Retorna serializer en base al rol del usuario."""        
+        if self.request.user.is_admin:
+            return  ProductModelSerializer
+        if self.request.user.is_client:
+            #import pdb ; pdb.set_trace()
+            return ProductClientModelSerializer
                         
     def get_queryset(self):       
         if self.action == 'list':            
@@ -136,13 +142,14 @@ class AllProductViewSet(mixins.ListModelMixin,
 
     def get_object(self):         
         """Retorno detalle producto"""
+        #import pdb ; pdb.set_trace()   
         return get_object_or_404( 
             Product,
-            code = self.kwargs['pk']
+            pk = self.kwargs['pk']
         )
     
     def create(self, request, *args, **kwargs):
-
+        #import pdb ; pdb.set_trace() 
         serializer = AddProductSerializer(
             data=request.data,
             context={'user':request.user}            
@@ -155,9 +162,11 @@ class AllProductViewSet(mixins.ListModelMixin,
 
     @action(detail=True, methods=['post'])
     def shopping(self, request, *args, **kwargs):
-        product = self.get_object()
+        #product = self.get_object()
         store = product.store
         client = request.user
+
+        import pdb ; pdb.set_trace()    
 
         serializer = AddPurchaseSerializer(          
             data=request.data,
@@ -170,5 +179,36 @@ class AllProductViewSet(mixins.ListModelMixin,
         data = PurchaseModelSerializer(purchase).data
         return Response(data, status=status.HTTP_200_OK)    
    
+class AllProductStoreViewSet(mixins.ListModelMixin,                                                   
+                             viewsets.GenericViewSet):
 
+    serializer_class = ProductClientModelSerializer
+    
+    def dispatch(self, request, *args, **kwargs):            
+        #import pdb ; pdb.set_trace() 
+        self.store = get_object_or_404( 
+            Store,
+            pk = kwargs['store_id']
+        )           
+        return super(AllProductStoreViewSet, self).dispatch(request, *args, **kwargs)
+
+    def get_permissions(self):
+        permissions = [IsAuthenticated]
+        if self.action == 'list':
+            permissions.append(IsClient)
+        return [p() for p in permissions]   
+                        
+    def get_queryset(self):
+        #import pdb ; pdb.set_trace() 
+        return Product.objects.filter(           
+            stock__gt = 0,
+            is_active = True,
+            store = self.store
+        )
+
+
+        
+            
+
+   
     

@@ -8,6 +8,17 @@ from tienda.stores.models import Store
 #Serializer
 from tienda.users.serializers import UserModelSerializer
 
+class StoreModelClientSerializer(serializers.ModelSerializer):
+    """Store model serializer."""
+  
+    class Meta:
+        """Meta class."""
+        model = Store
+        fields = (
+            'id',            
+            'name',
+            'address'                
+        )
 
 class StoreModelSerializer(serializers.ModelSerializer):
     """Store model serializer."""
@@ -21,6 +32,7 @@ class StoreModelSerializer(serializers.ModelSerializer):
         """Meta class."""
         model = Store
         fields = (            
+            'id',
             'name',
             'address',
             'user',

@@ -20,8 +20,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
                     viewsets.GenericViewSet):
 
      """Category view set."""     
-     serializer_class = CategoryModelSerializer
-     
+     serializer_class = CategoryModelSerializer    
 
      
      def get_queryset(self):        

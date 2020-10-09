@@ -7,7 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 #Models
-from tienda.stores.models import Store, Product, Purchase
+from tienda.stores.models import Store, Product, Purchase, PurchaseDetail
 from tienda.categories.models import Category
 
 #Permissions
@@ -19,7 +19,8 @@ from tienda.stores.permissions import (
 
 #Serializers
 from tienda.stores.serializers import (  
-    PurchaseModelSerializer    
+    PurchaseModelSerializer,
+    AddPurchaseSerializer,    
 )
 
 class ClientPurchaseViewSet(mixins.ListModelMixin,                       
@@ -51,6 +52,47 @@ class ClientPurchaseViewSet(mixins.ListModelMixin,
         instance.is_active = False
         instance.save()   
   
+
+class ShoppingViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,                                                   
+                      viewsets.GenericViewSet): 
+
+    serializer_class = PurchaseModelSerializer   
+    
+    def create(self, request, *args, **kwargs):       
+        
+        client = request.user
+        products = request.data['products']
+        request.data.pop('products')
+
+        #creamos la compra
+        purchase = Purchase.objects.create(
+            client=client                      
+        )
+        purchase.save()
+
+       
+        for product in products:            
+            prod = Product.objects.get(id=product['id'])
+
+            #guardamos detalle de compra
+            purchase_detail = PurchaseDetail.objects.create(
+                product = prod,
+                purchase = purchase,
+                unit_value = prod.price,
+                quantity = product['quantity']                 
+            )
+            purchase_detail.save()
+
+            prod.stock -= product['quantity']
+            prod.save()
+
+            purchase.total += product['quantity'] * prod.price
+
+        purchase.save()
+
+        data = self.get_serializer(purchase).data
+        return Response(data,status=status.HTTP_201_CREATED)
 
     
 
