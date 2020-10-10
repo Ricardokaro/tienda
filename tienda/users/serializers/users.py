@@ -10,6 +10,18 @@ from rest_framework.validators import UniqueValidator
 #Models
 from tienda.users.models import User
 
+class UserModelClientSerializer(serializers.ModelSerializer):
+    """User model serializer."""
+
+    class Meta:
+        """Meta class"""
+        model = User
+        fields = (
+            'username',
+            'first_name',
+            'last_name'                   
+        )
+
 
 class UserModelSerializer(serializers.ModelSerializer):
     """User model serializer."""

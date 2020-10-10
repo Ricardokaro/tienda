@@ -20,45 +20,28 @@ from tienda.stores.permissions import (
 #Serializers
 from tienda.stores.serializers import (  
     PurchaseModelSerializer,
-    AddPurchaseSerializer,    
-)
+    PurchaseDetailClientModelSerializer    
+)  
 
-class ClientPurchaseViewSet(mixins.ListModelMixin,                       
-                        mixins.RetrieveModelMixin,                                             
-                        viewsets.GenericViewSet):
-  
-    
-    serializer_class = PurchaseModelSerializer
-    
-    def dispatch(self, request, *args, **kwargs):
-        return super(ClientPurchaseViewSet, self).dispatch(request, *args, **kwargs)
+class ShoppingViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,                                                   
+                      viewsets.GenericViewSet):
 
     def get_permissions(self):
         permissions = [IsAuthenticated]      
         if self.action in ['list']:
             permissions.append(IsClient)        
-        return [p() for p in permissions]    
-                        
-    def get_queryset(self):                
-        return Purchase.objects.filter(client=self.client)
+        return [p() for p in permissions]  
 
-    def get_object(self):
-        return get_object_or_404( 
-            Purchase,
-            client = self.client                  
-        )
-
-    def perform_destroy(self, instance):      
-        instance.is_active = False
-        instance.save()   
-  
-
-class ShoppingViewSet(mixins.ListModelMixin,
-                      mixins.CreateModelMixin,                                                   
-                      viewsets.GenericViewSet): 
-
-    serializer_class = PurchaseModelSerializer   
+    def get_queryset(self):
+        return PurchaseDetail.objects.filter(purchase__client = self.request.user)
     
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return PurchaseDetailClientModelSerializer
+        if self.action == 'create':
+            return PurchaseModelSerializer
+
     def create(self, request, *args, **kwargs):       
         
         client = request.user
@@ -74,7 +57,7 @@ class ShoppingViewSet(mixins.ListModelMixin,
        
         for product in products:            
             prod = Product.objects.get(id=product['id'])
-
+            
             #guardamos detalle de compra
             purchase_detail = PurchaseDetail.objects.create(
                 product = prod,

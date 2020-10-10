@@ -16,12 +16,7 @@ router = DefaultRouter()
 router.register(r'stores', store_views.StoreViewSet, basename='store')
 router.register(r'stores/(?P<store_id>[0-9]+)/products', product_views.AllProductStoreViewSet, basename='product')
 router.register(
-    r'stores/(?P<store_name>[-a-zA-Z0-0_]+)/categories/(?P<category_name>[-a-zA-Z0-0_]+)/products', 
-    product_views.ProductViewSet, 
-    basename='product'
-)
-router.register(
-    r'stores/(?P<store_name>[-a-zA-Z0-0_]+)/sales', 
+    r'sales', 
     sale_views.SaleViewSet, 
     basename='sale'
 )

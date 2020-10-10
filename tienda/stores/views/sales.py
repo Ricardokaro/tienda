@@ -9,28 +9,23 @@ from rest_framework.permissions import IsAuthenticated
 from tienda.stores.permissions import IsOwner 
 
 #Serializers
-from tienda.stores.serializers import PurchaseModelSerializer
+from tienda.stores.serializers import PurchaseModelSerializer, PurchaseDetailModelSerializer
 
 #Models
-from tienda.stores.models import Store, Product, Purchase
+from tienda.stores.models import Store, Product, Purchase, PurchaseDetail
 
 class SaleViewSet(mixins.ListModelMixin,
-                   viewsets.GenericViewSet):
-
+                  viewsets.GenericViewSet):
         
-     serializer_class = PurchaseModelSerializer
+     serializer_class = PurchaseDetailModelSerializer
 
-     def dispatch(self, request, *args, **kwargs):
-        store_name = kwargs['store_name']      
-        self.store = get_object_or_404(Store, name=store_name)
-        self.owner = self.store.owner
+     def dispatch(self, request, *args, **kwargs):       
         return super(SaleViewSet, self).dispatch(request, *args, **kwargs)    
 
      def get_queryset(self):
-         queryset = Purchase.objects.filter(store=self.store)
-         if self.action == 'list':
-             return queryset
-         return queryset
+         queryset = PurchaseDetail.objects.filter(product__store__owner = self.request.user)
+         return PurchaseDetail.objects.all()
+           
 
      def get_permissions(self):
          permissions = [IsAuthenticated]
