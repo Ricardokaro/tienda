@@ -18,7 +18,7 @@ class TiendaModel(models.Model):
     )
 
     modified = models.DateTimeField(
-        'modified at',        
+        'modified at',         
         auto_now=True,
         help_text='Fecha y hora en que se modifico por ultima vez el objeto.'
     )
@@ -28,4 +28,4 @@ class TiendaModel(models.Model):
         abstract = True
 
         get_latest_by = 'created'
-        ordering = ['-created','-modified']
+        ordering = ['-created', '-modified']

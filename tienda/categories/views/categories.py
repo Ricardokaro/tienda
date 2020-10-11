@@ -2,6 +2,7 @@
 
 #Django REST framework
 from rest_framework import viewsets, mixins
+from rest_framework import generics
 
 #Permissions
 from rest_framework.permissions import IsAuthenticated
@@ -15,22 +16,21 @@ from tienda.categories.models import Category
 
 class CategoryViewSet(mixins.CreateModelMixin,
                     mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,                   
+                    mixins.UpdateModelMixin,
                     mixins.ListModelMixin,
                     viewsets.GenericViewSet):
 
-     """Category view set."""     
-     serializer_class = CategoryModelSerializer    
+     """Category view set."""
+     serializer_class = CategoryModelSerializer
 
-     
-     def get_queryset(self):        
-         queryset = Category.objects.all()          
+
+     def get_queryset(self):
+         queryset = Category.objects.all()
          return queryset
 
      def get_permissions(self):
          permissions = [IsAuthenticated]
          if self.action in ['update', 'partial_update']:
-             permissions.append(IsSuperUser)         
-         return [permission() for permission in permissions]          
-    
-   
+             permissions.append(IsSuperUser)
+         return [permission() for permission in permissions]
+

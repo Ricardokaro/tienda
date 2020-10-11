@@ -12,9 +12,6 @@ from .views import categories as category_views
 
 router = DefaultRouter()
 router.register(r'categories', category_views.CategoryViewSet, basename='category')
-
-urlpatterns = [
-    path("", include(router.urls))
-]
+urlpatterns = router.urls
 
 
