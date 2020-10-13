@@ -17,9 +17,10 @@ class UserModelClientSerializer(serializers.ModelSerializer):
         """Meta class"""
         model = User
         fields = (
+            'id',
             'username',
             'first_name',
-            'last_name'                   
+            'last_name'
         )
 
 
@@ -30,16 +31,17 @@ class UserModelSerializer(serializers.ModelSerializer):
         """Meta class"""
         model = User
         fields = (
+            'id',
             'username',
             'first_name',
             'last_name',
-            'is_client',           
-            'is_admin'          
+            'is_client',
+            'is_admin'
         )
 
 class UserSignUpSerializer(serializers.Serializer):
     """User sign up serializer
-    Handle sign up data validation and user/profile cration.    
+    Handle sign up data validation and user/profile cration.
     """
 
     email = serializers.EmailField(
@@ -49,7 +51,7 @@ class UserSignUpSerializer(serializers.Serializer):
     )
     username = serializers.CharField(
         min_length = 4,
-        max_length = 20, 
+        max_length = 20,
         validators = [
             UniqueValidator(queryset=User.objects.all())
         ]
@@ -61,9 +63,9 @@ class UserSignUpSerializer(serializers.Serializer):
     #Name
     first_name = serializers.CharField(min_length=2, max_length=30)
     last_name = serializers.CharField(min_length=2, max_length=30)
-    
+
     def validate(self, data):
-        """Verify passwords match."""        
+        """Verify passwords match."""
         passwd = data['password']
         passwd_conf = data['password_confirmation']
         if(passwd != passwd_conf):
@@ -73,10 +75,10 @@ class UserSignUpSerializer(serializers.Serializer):
 
     def create(self, data):
         """Handle user and profile creation."""
-        data.pop('password_confirmation')        
+        data.pop('password_confirmation')
         user = User.objects.create_user(**data, is_client=True)
         return user
-   
+
 
 class UserLoginSerializer(serializers.Serializer):
     """User login serializer.
@@ -90,14 +92,14 @@ class UserLoginSerializer(serializers.Serializer):
         """Check credentials."""
         user = authenticate(username=data['email'], password=data['password'])
         if not user:
-            raise serializers.ValidationError('Credenciales no válidas')      
+            raise serializers.ValidationError('Credenciales no válidas')
         self.context['user'] = user
         return data
     def create(self, data):
         """Generate or retrieave new token."""
         token, created = Token.objects.get_or_create(user=self.context['user'])
-        return self.context['user'], token.key 
+        return self.context['user'], token.key
 
 
-                            
+
 
