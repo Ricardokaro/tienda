@@ -10,7 +10,6 @@ class TestUrls(APITestCase):
         self.email = 'ricardo@gmail.com'
         self.password = 'super1'
         self.user = User.objects.create_superuser(self.username, self.email, self.password)
-        # self.user = User.objects.create_user()
         self.token = Token.objects.create(user=self.user)
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
@@ -19,7 +18,7 @@ class TestUrls(APITestCase):
         response = self.client.post(
             reverse('categories:category-list'),
             data={
-                "name": "Hamburger"
+                "name": "Tecnologia"
             }
         )
         self.assertEqual(response.status_code, 201)
@@ -35,6 +34,9 @@ class TestUrls(APITestCase):
     def test_update_category_by_super_user(self):
         category = Category.objects.create(name='Tecnologia')
         data = {'name':'Deportes'}
-        response = self.client.patch('/categories/'+str(category.id)+'/', data)
+        response = self.client.patch(
+            reverse('categories:category-detail', kwargs={'pk': category.id}),
+            data
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['id'], category.id)

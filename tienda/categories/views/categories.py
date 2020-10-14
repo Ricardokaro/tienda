@@ -22,11 +22,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
 
      """Category view set."""
      serializer_class = CategoryModelSerializer
-
-
-     def get_queryset(self):
-         queryset = Category.objects.all()
-         return queryset
+     queryset = Category.objects.all()
 
      def get_permissions(self):
          permissions = [IsAuthenticated]

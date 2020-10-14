@@ -8,23 +8,18 @@ from tienda.stores.models import PurchaseDetail
 #Serializer
 from tienda.stores.serializers import (
     ProductModelSerializer,
-    ProductClientModelSerializer,
-    PurchaseModelSerializer,
     PurchaseStoreModelSerializer,
+    ProductClientModelSerializer,
     PurchaseClientModelSerializer
 )
 
 class PurchaseDetailModelSerializer(serializers.ModelSerializer):
-    """
-    model serializer
-    """
+
     product = ProductModelSerializer(read_only=True)
     purchase = PurchaseStoreModelSerializer(read_only=True)
 
     class Meta:
-        """
-        Meta class
-        """
+
         model = PurchaseDetail
         fields = (
             'purchase',
@@ -34,16 +29,12 @@ class PurchaseDetailModelSerializer(serializers.ModelSerializer):
         )
 
 class PurchaseDetailClientModelSerializer(serializers.ModelSerializer):
-    """
-    model serializer
-    """
+
     product = ProductClientModelSerializer(read_only=True)
     purchase = PurchaseClientModelSerializer(read_only=True)
 
     class Meta:
-        """
-        Meta class
-        """
+
         model = PurchaseDetail
         fields = (
             'purchase',

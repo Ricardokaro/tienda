@@ -11,7 +11,7 @@ from tienda.stores.permissions import IsOwner
 from tienda.stores.serializers import StoreModelSerializer
 
 #Models
-from tienda.stores.models import Store, Product
+from tienda.stores.models import Store
 
 class StoreViewSet(mixins.CreateModelMixin,
                     mixins.RetrieveModelMixin,

@@ -2,13 +2,12 @@
 
 #Django REST Framework
 from rest_framework import mixins,status, viewsets
-from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 #Models
-from tienda.stores.models import Store, Product, Purchase, PurchaseDetail
-from tienda.categories.models import Category
+from tienda.stores.models import Store, Product, PurchaseDetail
+
 
 #Permissions
 from rest_framework.permissions import IsAuthenticated

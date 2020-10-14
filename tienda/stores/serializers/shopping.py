@@ -1,29 +1,17 @@
-
-
-#Django 
-from django.utils import timezone
 #Django REST Framework
 from rest_framework import serializers
 
 #Model
 from tienda.stores.models import Purchase
 
-#serializers
-from tienda.categories.serializers import CategoryModelSerializer
-
-from tienda.stores.serializers import (
-    StoreModelSerializer, 
-    ProductModelSerializer    
-)
-
 from tienda.users.serializers import UserModelSerializer, UserModelClientSerializer
 
-class PurchaseModelSerializer(serializers.ModelSerializer):    
+class PurchaseModelSerializer(serializers.ModelSerializer):
     """
     Purchase model serializer
-    """   
-    
-    client = UserModelSerializer(read_only=True)    
+    """
+
+    client = UserModelSerializer(read_only=True)
     total = serializers.IntegerField(default=0)
 
     purchase_date = serializers.DateTimeField(source='created', read_only=True)
@@ -35,17 +23,17 @@ class PurchaseModelSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = (
             'id',
-            'client',            
+            'client',
             'total',
-            'purchase_date'            
+            'purchase_date'
         )
 
-class PurchaseClientModelSerializer(serializers.ModelSerializer):    
+class PurchaseClientModelSerializer(serializers.ModelSerializer):
     """
     Purchase model serializer
-    """   
-    
-    client = UserModelClientSerializer(read_only=True)    
+    """
+
+    client = UserModelClientSerializer(read_only=True)
     total = serializers.IntegerField(default=0)
 
     purchase_date = serializers.DateTimeField(source='created', read_only=True)
@@ -57,17 +45,17 @@ class PurchaseClientModelSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = (
             'id',
-            'client',            
+            'client',
             'total',
-            'purchase_date'            
+            'purchase_date'
         )
 
 
-class PurchaseStoreModelSerializer(serializers.ModelSerializer):    
+class PurchaseStoreModelSerializer(serializers.ModelSerializer):
     """
     Purchase model serializer
-    """   
-    
+    """
+
     client = UserModelSerializer(read_only=True)
     purchase_date = serializers.DateTimeField(source='created', read_only=True)
 
@@ -79,6 +67,30 @@ class PurchaseStoreModelSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'client',
-            'purchase_date'            
+            'purchase_date'
         )
+
+
+class PruebaPurchaseClientModelSerializer(serializers.ModelSerializer):
+    """
+    Purchase model serializer
+    """
+
+    client = UserModelClientSerializer(read_only=True)
+    total = serializers.IntegerField(default=0)
+
+    purchase_date = serializers.DateTimeField(source='created', read_only=True)
+
+    class Meta:
+        """
+        Meta class
+        """
+        model = Purchase
+        fields = (
+            'id',
+            'client',
+            'total',
+            'purchase_date'
+        )
+
 
