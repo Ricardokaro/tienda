@@ -75,8 +75,9 @@ class AllProductViewSet(mixins.ListModelMixin,
     def create(self, request, *args, **kwargs):
         serializer = AddProductSerializer(
             data=request.data,
-            context={'user':request.user}
+            context={'user': request.user}
         )
+
         serializer.is_valid(raise_exception=True)
         product = serializer.save()
 

@@ -15,8 +15,7 @@ from tienda.stores.permissions import (
 
 #Serializers
 from tienda.stores.serializers import (
-    PurchaseModelSerializer,
-    PurchaseDetailClientModelSerializer
+    PurchaseClientModelSerializer
 )
 
 class ShoppingViewSet(mixins.ListModelMixin,
@@ -30,13 +29,11 @@ class ShoppingViewSet(mixins.ListModelMixin,
         return [p() for p in permissions]
 
     def get_queryset(self):
-        return PurchaseDetail.objects.filter(purchase__client = self.request.user)
+        return Purchase.objects.filter(client = self.request.user)
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return PurchaseDetailClientModelSerializer
-        if self.action == 'create':
-            return PurchaseModelSerializer
+        if self.action == ['list', 'create']:
+            return PurchaseClientModelSerializer
 
     def create(self, request, *args, **kwargs):
 
