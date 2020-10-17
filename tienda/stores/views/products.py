@@ -20,7 +20,6 @@ from tienda.stores.permissions import (
 #Serializers
 from tienda.stores.serializers import (
     ProductModelSerializer,
-    AddProductSerializer,
     ProductClientModelSerializer
 )
 
@@ -72,17 +71,6 @@ class AllProductViewSet(mixins.ListModelMixin,
             pk = self.kwargs['pk']
         )
 
-    def create(self, request, *args, **kwargs):
-        serializer = AddProductSerializer(
-            data=request.data,
-            context={'user': request.user}
-        )
-
-        serializer.is_valid(raise_exception=True)
-        product = serializer.save()
-
-        data=self.get_serializer(product).data
-        return Response(data,status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         if not PurchaseDetail.objects.filter(product=instance).exists():

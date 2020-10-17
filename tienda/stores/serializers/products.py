@@ -9,11 +9,13 @@ from tienda.categories.models import Category
 from tienda.categories.serializers import CategoryModelSerializer
 from tienda.stores.serializers import StoreModelSerializer, StoreModelClientSerializer
 
+
 class ProductModelSerializer(serializers.ModelSerializer):
     """
     model serializer
     """
-    category = CategoryModelSerializer(read_only=False)
+    category = CategoryModelSerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(write_only=True, queryset=Category.objects.all(), source='category')
     store = StoreModelSerializer(read_only=True)
 
     class Meta:
@@ -30,13 +32,41 @@ class ProductModelSerializer(serializers.ModelSerializer):
             'stock',
             'stock_limited',
             'category',
+            'category_id',
             'store'
         )
+        read_only_fields = ('id',)
 
     def update(self, instance, validated_data):
         if instance.stock_limited < validated_data.get('stock', 0):
             raise serializers.ValidationError('Stock sobre pasa el limited')
         return super().update(instance, validated_data)
+
+    def validate_code(self, data):
+        """Verificamos si el producto existe."""
+        product = Product.objects.filter(code=data, is_active=True)
+        if product.exists():
+            raise serializers.ValidationError('Producto ya existe.')
+        return data
+
+    def validate(self, data):
+        """Varifica que el stock limited sea mayor que el stock inicial."""
+        if data.get('stock',0) > data.get('stock_limited',0):
+            raise serializers.ValidationError('El stock limited debe ser mayor que el stock inicial')
+        return data
+
+    def create(self, data):
+        """Crear producto"""
+        user = self.context['request'].user
+        store = Store.objects.get(user=user)
+        product = Product.objects.create(
+            **data,
+            store=store
+        )
+
+        return product
+
+
 
 class ProductClientModelSerializer(serializers.ModelSerializer):
     """
@@ -60,40 +90,11 @@ class ProductClientModelSerializer(serializers.ModelSerializer):
             'store'
         )
 
-class AddProductSerializer(serializers.Serializer):
-
-    code = serializers.CharField(max_length=10)
-    name = serializers.CharField(max_length=40)
-    description = serializers.CharField(max_length=140)
-    price = serializers.IntegerField(default=0)
-    stock = serializers.IntegerField(default=0)
-    stock_limited = serializers.IntegerField(default=0)
-    id_category = serializers.IntegerField(default=0)
-
-    def validate_code(self, data):
-        """Verificamos si el producto existe."""
-        product = Product.objects.filter(code=data,is_active=True)
-        if product.exists():
-            raise serializers.ValidationError('Producto ya existe.')
-        return data
 
 
-    def validate(self, data):
-        """Varifica que el stock limited sea mayor que el stock inicial."""
-        if data['stock'] >= data['stock_limited']:
-            raise serializers.ValidationError('El stock limited debe ser mayor que el stock inicial')
-        return data
 
-    def create(self, data):
-        """Crear producto"""
-        category = Category.objects.get(pk=data['id_category'])
-        user = self.context['user']
-        store = Store.objects.get(user=user)
-        data.pop('id_category')
-        product = Product.objects.create(
-            **data,
-            store=store,
-            category=category
-        )
 
-        return product
+
+
+
+

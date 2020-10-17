@@ -63,6 +63,7 @@ class PurchaseStoreModelSerializer(serializers.ModelSerializer):
     """
 
     client = UserModelSerializer(read_only=True)
+    detail = PurchaseDetailClientModelSerializer(read_only=True, many=True,  source='purchasedetail_set')
     purchase_date = serializers.DateTimeField(source='created', read_only=True)
 
     class Meta:
@@ -73,6 +74,7 @@ class PurchaseStoreModelSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'client',
+            'detail',
             'purchase_date'
         )
 

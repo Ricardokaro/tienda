@@ -8,21 +8,21 @@ from rest_framework.permissions import IsAuthenticated
 from tienda.stores.permissions import IsOwner
 
 #Serializers
-from tienda.stores.serializers import  PurchaseDetailModelSerializer
+from tienda.stores.serializers import  PurchaseStoreModelSerializer
 
 #Models
-from tienda.stores.models import PurchaseDetail
+from tienda.stores.models import Purchase
 
 class SaleViewSet(mixins.ListModelMixin,
                   viewsets.GenericViewSet):
 
-     serializer_class = PurchaseDetailModelSerializer
+     serializer_class = PurchaseStoreModelSerializer
 
      def dispatch(self, request, *args, **kwargs):
         return super(SaleViewSet, self).dispatch(request, *args, **kwargs)
 
      def get_queryset(self):
-         return PurchaseDetail.objects.all()
+         return Purchase.objects.all()
 
 
      def get_permissions(self):
