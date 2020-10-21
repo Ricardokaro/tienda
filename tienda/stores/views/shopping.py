@@ -1,5 +1,8 @@
 """Circle membership views."""
 
+#Django
+from django.db import transaction
+
 #Django REST Framework
 from rest_framework import mixins,status, viewsets
 from rest_framework.response import Response
@@ -32,9 +35,10 @@ class ShoppingViewSet(mixins.ListModelMixin,
         return Purchase.objects.filter(client = self.request.user)
 
     def get_serializer_class(self):
-        if self.action == ['list', 'create']:
+        if self.action in ['list', 'create']:
             return PurchaseClientModelSerializer
 
+    @transaction.atomic()
     def create(self, request, *args, **kwargs):
 
         client = request.user
@@ -45,28 +49,20 @@ class ShoppingViewSet(mixins.ListModelMixin,
         purchase = Purchase.objects.create(
             client=client
         )
-        purchase.save()
-
 
         for product in products:
             prod = Product.objects.get(id=product['id'])
-
             #guarda detalle de compra
-            purchase_detail = PurchaseDetail.objects.create(
+            PurchaseDetail.objects.create(
                 product = prod,
                 purchase = purchase,
                 unit_value = prod.price,
                 quantity = product['quantity']
             )
-            purchase_detail.save()
-
             prod.stock -= product['quantity']
             prod.save()
-
             purchase.total += product['quantity'] * prod.price
-
         purchase.save()
-
         data = self.get_serializer(purchase).data
         return Response(data,status=status.HTTP_201_CREATED)
 

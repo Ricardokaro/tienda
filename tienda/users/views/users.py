@@ -2,7 +2,6 @@
 #Django REST Framework
 from rest_framework import status, viewsets, mixins
 from rest_framework.decorators import action
-from rest_framework.views import APIView
 from rest_framework.response import Response
 
 #Permission
@@ -12,8 +11,11 @@ from rest_framework.permissions import (
 )
 from tienda.users.permissions import IsAccountOwner
 
+#Task
+from tienda.users.tasks import get_users_count
+
 #Serializer
-from tienda.users.serializers import (  
+from tienda.users.serializers import (
     UserLoginSerializer,
     UserModelSerializer,
     UserSignUpSerializer
@@ -22,8 +24,9 @@ from tienda.users.serializers import (
 #Model
 from tienda.users.models import User
 
+
 class UserViewSet(mixins.RetrieveModelMixin,
-                  mixins.UpdateModelMixin,  
+                  mixins.UpdateModelMixin,
                   viewsets.GenericViewSet):
     """User View Set"""
 
@@ -39,17 +42,18 @@ class UserViewSet(mixins.RetrieveModelMixin,
             permissions = [IsAuthenticated, IsAccountOwner]
         else:
             permissions = [IsAuthenticated]
-        return [p() for p in permissions]        
+        return [p() for p in permissions]
 
     @action(detail=False, methods=['post'])
     def login(self, request):
         """Handle sign up, login and account verification."""
+        get_users_count.delay()
         serializer = UserLoginSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         user, token = serializer.save()
         data={
             'user': UserModelSerializer(user).data,
-            'acces_token': token 
+            'acces_token': token
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -60,7 +64,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
         serializer = UserSignUpSerializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        data = UserModelSerializer(user).data      
-        return Response(data, status=status.HTTP_201_CREATED)    
+        data = UserModelSerializer(user).data
+        return Response(data, status=status.HTTP_201_CREATED)
 
-    
+

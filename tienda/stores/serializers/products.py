@@ -63,7 +63,6 @@ class ProductModelSerializer(serializers.ModelSerializer):
             **data,
             store=store
         )
-
         return product
 
 

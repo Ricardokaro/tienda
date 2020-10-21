@@ -1,4 +1,4 @@
-"""Users serializers."""
+"""Users serializers"""
 #Django
 from django.contrib.auth import password_validation, authenticate
 
@@ -43,7 +43,6 @@ class UserSignUpSerializer(serializers.Serializer):
     """User sign up serializer
     Handle sign up data validation and user/profile cration.
     """
-
     email = serializers.EmailField(
         validators=[
             UniqueValidator(queryset=User.objects.all())
@@ -75,6 +74,7 @@ class UserSignUpSerializer(serializers.Serializer):
 
     def create(self, data):
         """Handle user and profile creation."""
+
         data.pop('password_confirmation')
         user = User.objects.create_user(**data, is_client=True)
         return user

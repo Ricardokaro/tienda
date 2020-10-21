@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 #Model
-from tienda.stores.models import Purchase
+from tienda.stores.models import Purchase, Store
 
 from tienda.users.serializers import UserModelSerializer, UserModelClientSerializer
 
@@ -63,7 +63,6 @@ class PurchaseStoreModelSerializer(serializers.ModelSerializer):
     """
 
     client = UserModelSerializer(read_only=True)
-    detail = PurchaseDetailClientModelSerializer(read_only=True, many=True,  source='purchasedetail_set')
     purchase_date = serializers.DateTimeField(source='created', read_only=True)
 
     class Meta:
@@ -74,8 +73,19 @@ class PurchaseStoreModelSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'client',
-            'detail',
             'purchase_date'
         )
+
+    def to_representation(self, instance):
+        representention = super(PurchaseStoreModelSerializer, self).to_representation(instance)
+        owner = self.context['request'].user
+        store = Store.objects.filter(product__store__owner=owner)[0]
+        purchase_detail = instance.purchasedetail_set.filter(product__store=store)
+        detalle_serializer = PurchaseDetailClientModelSerializer(purchase_detail,many=True)
+        representention['detail'] = detalle_serializer.data
+        representention['total'] = 0
+        for detail in purchase_detail:
+            representention['total'] += detail.quantity * detail.unit_value
+        return representention
 
 

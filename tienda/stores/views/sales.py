@@ -11,7 +11,7 @@ from tienda.stores.permissions import IsOwner
 from tienda.stores.serializers import  PurchaseStoreModelSerializer
 
 #Models
-from tienda.stores.models import Purchase
+from tienda.stores.models import Purchase, Store
 
 class SaleViewSet(mixins.ListModelMixin,
                   viewsets.GenericViewSet):
@@ -22,7 +22,7 @@ class SaleViewSet(mixins.ListModelMixin,
         return super(SaleViewSet, self).dispatch(request, *args, **kwargs)
 
      def get_queryset(self):
-         return Purchase.objects.all()
+        return Purchase.objects.all()
 
 
      def get_permissions(self):

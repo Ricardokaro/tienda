@@ -32,6 +32,7 @@ class PurchaseDetailClientModelSerializer(serializers.ModelSerializer):
 
         model = PurchaseDetail
         fields = (
+            'id',
             'product',
             'unit_value',
             'quantity'
